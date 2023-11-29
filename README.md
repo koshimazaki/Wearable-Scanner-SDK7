@@ -7,6 +7,10 @@ Key components:
 - Wearable that avatar is wearing is being checked / or NFT 
 - Baed on that access to area is given
 
+https://github.com/koshimazaki/Wearable-Scanner-SDK7/assets/18751916/2e95a284-7c49-4e16-b886-5d8d4621780d
+
+
+
 
 ## Guide to SDK7 Scene 
 # SDK7 Template scene
