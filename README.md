@@ -1,10 +1,10 @@
 ## Wearable Scanner in Decentraland SDK7
 
-A simple interactive scene in Decentraland providing wearable / wallet scanning capability.
+A simple interactive scene in Decentraland providing wearable / avatar scanning capability.
 Code refactored to DCL SDK7.
 
 Key components:
-- Wearable that avatar is wearing is being checked / or NFT 
+- Wearable that avatar is wearing is being checked
 - Based on that access to the VIP area is given
 
 https://github.com/koshimazaki/Wearable-Scanner-SDK7/assets/18751916/2e95a284-7c49-4e16-b886-5d8d4621780d
