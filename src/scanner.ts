@@ -1,18 +1,17 @@
 
 import { Vector3, Quaternion} from '@dcl/sdk/math'
-import { Animator, Entity, executeTask, AvatarAttach, MeshRenderer, GltfContainer, Transform, VisibilityComponent, engine, pointerEventsSystem, AudioSource, MeshCollider } from '@dcl/sdk/ecs'
-
+import { Animator, Entity, executeTask, 
+    MeshRenderer, GltfContainer, Transform, 
+    engine, AudioSource } from '@dcl/sdk/ecs'
 import { UserData, getUserData } from '~system/UserIdentity'
-import crypto from 'dcl-crypto-toolkit'
+//import crypto from 'dcl-crypto-toolkit'
 
 
 let NFT = "urn:decentraland:off-chain:base-avatars:m_sweater_02"; /// wearable 
 
+
 let doorOpenedForPlayer = false; // Flag to check if door has been opened for player
 
-
-// Flag to check if the scanner has been triggered
-let scannerTriggered = false;
 let delayElapsed = 0; // Time elapsed since the start of the delay
 let checkingStarted = false; // Flag to indicate if checking has started
 
@@ -120,15 +119,6 @@ audioSource.playing = true
         })
 
 
-export const scannerTrigger = engine.addEntity()
-
-Transform.create(scannerTrigger, {
-    position: Vector3.create(7, 0, 11),
-    rotation: Quaternion.create(0, 0, 0, 1),
-    scale: Vector3.create(4, 4, 4)
-})
-
-
 // Scanner States 
 
 export class ScannerState  {
@@ -139,40 +129,44 @@ export class ScannerState  {
     animation: string;
     sound: string;
     door: string;
+    isTriggered: boolean;
 
-    constructor(wearable: string, userData: string, access: boolean, isChecking: boolean, animation: string, sound: string, door: string)
+    constructor(wearable: string, userData: string, access: boolean, isChecking: boolean,animation: string, sound: string, door: string, isTriggered: boolean)
     {
-
     this.wearable = NFT;
     this.userData = userData;    
     this.access = access;
     this.isChecking = false;
     this.animation = 'none';
     this.sound = 'none';
-    this.door ='none'
-
+    this.door ='none';
+    this.isTriggered = false;
     }
 
-checkWearable() {
-
+startChecking() {
     this.isChecking = true;
+    this.isTriggered = true;
     this.access = false;
     this.animation = 'Laser_Action';
     this.sound = 'scanning';
 }
 
+stopChecking() {
+    this.isChecking = false;
+}
+
+resetTrigger() {
+    this.isTriggered = false;
+}
+
 giveAccess() {
-
-
     this.access = true;
     this.animation = 'Allow_Action';
     this.sound = 'accept';
     this.door = 'Open'
-
 }
 
 reject() {
-
 
     this.access = false;
     this.animation = 'NotAllow_Action';
@@ -183,7 +177,7 @@ reject() {
 }
 
 // Instance of ScannerState
-const scannerState = new ScannerState(NFT, '', false, false, 'none', 'none', 'close')
+const scannerState = new ScannerState(NFT, '', false, false, 'none', 'none', 'close', false)
 
 // Function to play sound based on scanner state
 
@@ -232,7 +226,7 @@ function checkWearableAndControlDoor() {
         return
       }
   
-      scannerState.checkWearable()
+      scannerState.startChecking()
       updateScannerSoundAndAnimation()
       console.log(userData.data.avatar.wearables)
 
@@ -251,24 +245,37 @@ function checkWearableAndControlDoor() {
     })
   }
   
+//Player position 
+let previousPlayerPos: Vector3 | null = null;
+
 // Function to get player position and trigger scanner
 function getPlayerPosition() {
     if (!Transform.has(engine.PlayerEntity)) return;
     
     const playerPos = Transform.get(engine.PlayerEntity).position;
     const scannerPos = Transform.get(Scanner).position;
-    
-    // Check distance and whether scanner has been triggered already
-    if (Vector3.distance(playerPos, scannerPos) < 2.5 && !scannerTriggered && !doorOpenedForPlayer) {
-        scannerTriggered = true;  // Set flag to true to avoid retriggering
-      scannerState.checkWearable();
-      updateScannerSoundAndAnimation();
-      startWearableCheckDelay(); // Start the delay
-  
-    } else if (Vector3.distance(playerPos, scannerPos) >= 2) { //distance from scanner 2m 
-      scannerTriggered = false;  // Reset flag when player moves away
+    const distance = Vector3.distance(playerPos, scannerPos);
+
+    // Check if player has just crossed the boundary into the scanner area, used instead of trigger
+    if (previousPlayerPos) {
+        const previousDistance = Vector3.distance(previousPlayerPos, scannerPos);
+
+        // If previously outside and now inside the boundary, and scanner not triggered or door not opened
+        if (previousDistance >= 2.5 && distance < 2.5 && !scannerState.isTriggered && !doorOpenedForPlayer) {
+            scannerState.startChecking();
+            updateScannerSoundAndAnimation();
+            startWearableCheckDelay(); // Start the delay
+        }
     }
-  }
+
+    // Update previous position for next frame
+    previousPlayerPos = playerPos;
+
+    // Reset trigger if player moves out of the boundary
+    if (distance >= 2.5) {
+        scannerState.resetTrigger();
+    }
+}
   
   engine.addSystem(getPlayerPosition);
   

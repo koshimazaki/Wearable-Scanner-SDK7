@@ -32,7 +32,7 @@ import {
       })
     })
 
-     // remaining models    
+     // Brickwall threshold / doorway     
     const stoneBrickThreshold = engine.addEntity()
     GltfContainer.create(stoneBrickThreshold, { src: 'models/Module_Stone_Straight_Door_01/Module_Stone_Straight_Door_01.glb' })
     MeshRenderer.create(stoneBrickThreshold)
@@ -82,7 +82,7 @@ import {
     TextShape.create(signpostText, {                     
       text: 'VIP Lounge',
       fontSize: 1.5,
-      textColor: { r: 0, g: 0, b: 0, a: 1 } ,          // rgb and a for alpha 
+      textColor: { r: 0, g: 0, b: 0, a: 1 } ,          // rgb and 'a' for alpha 
     })
     Name.create(signpostText, { value: 'signpost' })
 
